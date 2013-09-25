@@ -142,7 +142,7 @@ fastTabRead <- function(con,sep="\t",header=TRUE,sampleRows=100,
              dataTable = geoDataTable)
 }
 
-bigGEO <- function(fname,sampleSize=10) {
+bigGEO <- function(fname,sampleSize=100) {
   gsmlist <- list()
   #gpllist <- list()
   GSMcount <- 0
