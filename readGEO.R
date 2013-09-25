@@ -8,7 +8,7 @@ library(impute)
 
 #fileName="cytonormal.LAML.GSE12417-GPL570_series_matrix.txt"
 
-readGEO<-function( fileName ,saveRda=FALSE){
+readGEO<-function( fileName,saveRda=FALSE,transformLog=TRUE){
 
 	#Read from series_matrix.txt file
 	gse<-getGEO(filename= fileName)
@@ -28,7 +28,9 @@ readGEO<-function( fileName ,saveRda=FALSE){
 	rownames(e.reduced)<- GPL570Symbols[genes.shared]
 
 	#log transformation
-	e.reduced=log2(e.reduced+0.5)
+	if(transformLog==TRUE){
+		e.reduced=log2(e.reduced+0.5)
+	}
 
 	geo.data<-list()
 	geo.data$e<-e.reduced
