@@ -237,14 +237,14 @@ sample_id<-header$sample_id
 #geneSymbol<-make.unique(as.character(Table(gsmlist[[ 1 ]]@dataTable)[,11]))
 
 load( data.sources[1] )
-probeset_ID<-as.character(Table(gsmlist[[1]]@dataTable)[,"ID"])
 
-#if( "VALUE" %in% names(Table(gsmlist[[2]]@dataTable))==TRUE )
-#{
+if( "ID" %in% names(Table(gsmlist[[1]]@dataTable))==TRUE ){
+	probeset_ID<-as.character(Table(gsmlist[[1]]@dataTable)[,"ID"])
+}else{
+	probeset_ID<-as.character(Table(gsmlist[[1]]@dataTable)[,"ID_REF"])
+}
+
   valName<- "VALUE"
-#}else{
-# valName<- "VALUE_DS"
-#}
 
 
 ge<-matrix(NA,length(probeset_ID), 1  )
@@ -258,7 +258,7 @@ for( file.itr in 1:(length(data.sources)-1) ){ #1 is GPL platform data
   load( data.sources[file.itr] )
   for( sample.itr in 1:length(gsmlist) ){
     if( valName  %in% names(Table(gsmlist[[ sample.itr ]]@dataTable))){ 
-      ge.vec<-Table(gsmlist[[ sample.itr ]]@dataTable)[,valName]
+      ge.vec<-as.numeric(Table(gsmlist[[ sample.itr ]]@dataTable)[,valName])
       ge=cbind(ge, ge.vec)
       colnames(ge)[ncol(ge)]=names(gsmlist)[sample.itr]
     }
