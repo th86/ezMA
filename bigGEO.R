@@ -223,7 +223,6 @@ bigGEO <- function(fname,sampleSize=100) {
 
 
 
-
 #Summarization by Tai-Hsien Ou Yang
 summarizeGEO<-function(){
 
@@ -238,7 +237,7 @@ sample_id<-header$sample_id
 #geneSymbol<-make.unique(as.character(Table(gsmlist[[ 1 ]]@dataTable)[,11]))
 
 load( data.sources[1] )
-probeset_ID<-Table(gsmlist[[2]]@dataTable)[,"ID_REF"]
+probeset_ID<-as.character(Table(gsmlist[[1]]@dataTable)[,"ID"])
 
 #if( "VALUE" %in% names(Table(gsmlist[[2]]@dataTable))==TRUE )
 #{
