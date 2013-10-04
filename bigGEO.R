@@ -1,3 +1,6 @@
+#Read big GEO SOFT files
+#Author: Tai-Hsien Ou Yang, Columbia University
+
 source("classes.R")
 
 fileOpen <- function(fname,...) {
@@ -274,3 +277,28 @@ total.time =proc.time() - ptm
 cat("takes",total.time[1],"sec\n")
 
 }
+
+
+annotateGEO<-function(ge){
+
+  library("GEOquery")
+  library("hgu133plus2.db")
+
+  probeIDs<-ls(hgu133plus2SYMBOL)
+  symbols<-mget(probeIDs,hgu133plus2SYMBOL)
+  GPL570Symbols<-unlist(symbols)
+  genes.shared=intersect(rownames(ge),names(GPL570Symbols))
+  ge.reduced<-ge[genes.shared,]
+  rownames(ge.reduced)<- GPL570Symbols[genes.shared]
+
+  return(ge.reduced)
+}
+
+
+bigPipe<-function( fname, sampleSize=100 ){
+  bigGEO(fname, sampleSize )
+  summarizeGEO()
+  load("ge.rda")
+  ge<-annotateGEO(ge)
+  return(ge)
+} 
