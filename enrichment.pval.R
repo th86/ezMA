@@ -1,3 +1,7 @@
+#Hypergeometric Test
+#Tai-Hsien Ou Yang
+
+
 fisher.test<-function(k,n,K,N){
 	#N = population, K = signature set size, n = significant sample size, k = sample enriched in signature set 
 	p = K/N		#uniform distribution
