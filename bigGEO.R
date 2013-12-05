@@ -177,6 +177,8 @@ bigGEO <- function(fname,sampleSize=100) {
     nLinesToRead <- lineCounts[j+1,1]-lineCounts[j,1]-1
 
     if(j==nrow(lineCounts)) {
+      GSMcount=GSMcount+1
+      gsmlist[[accession]] <- .parseGSMWithLimits(con,n=nLinesToRead)
       nLinesToRead <- NULL
       save( gsmlist, file=paste( GSMcount,".tmp",sep="")  )
     }
@@ -309,9 +311,9 @@ summarizeGEOClinical<-function(  survtext=c("follow_up_duration [(]years[)]: " ,
 
 ptm <- proc.time()
 
-data.sources = list.files(pattern="*.rda")
+data.sources = list.files(pattern="*.tmp")
 
-load("header.rda")
+load("header.tmp")
 sample_id<-header$sample_id
 
  # valName<- "VALUE"
