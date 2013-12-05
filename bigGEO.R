@@ -247,6 +247,8 @@ if( "ID" %in% names(Table(gsmlist[[1]]@dataTable))==TRUE ){
 	probeset_ID<-as.character(Table(gsmlist[[1]]@dataTable)[,"ID_REF"])
 }
 
+
+
   valName<- "VALUE"
 
 
@@ -261,6 +263,7 @@ for( file.itr in 1:(length(data.sources)-1) ){ #1 is GPL platform data
   load( data.sources[file.itr] )
   for( sample.itr in 1:length(gsmlist) ){
     if( valName  %in% names(Table(gsmlist[[ sample.itr ]]@dataTable))){ 
+      #gsmlist[[sample.itr]]@header$characteristics_ch1
       ge.vec<-as.numeric(Table(gsmlist[[ sample.itr ]]@dataTable)[,valName])
       ge=cbind(ge, ge.vec)
       colnames(ge)[ncol(ge)]=names(gsmlist)[sample.itr]
@@ -295,6 +298,103 @@ annotateGEO<-function(ge){
 }
 
 
+
+
+summarizeGEOClinical<-function(  survtext=c("follow_up_duration [(]years[)]: " ,"event_metastasis: "), survarrayid=c(5,6), clincaltext=NULL, clinicalarrayid=NULL, clinicalcol=NULL ){
+
+ptm <- proc.time()
+
+data.sources = list.files(pattern="*.rda")
+
+load("header.rda")
+sample_id<-header$sample_id
+
+ # valName<- "VALUE"
+
+surv<-matrix(NA,1, 2  )
+
+if(is.null(clincaltext)==FALSE )
+  clnc<-matrix(NA,1, length(clinicalarrayid) )
+
+
+for( file.itr in 1:(length(data.sources)-1) ){ #1 is GPL platform data
+  message(sprintf("Loading %d split...", file.itr ))
+
+  load( data.sources[file.itr] )
+  for( sample.itr in 2:length(gsmlist) ){
+    #if( valName  %in% names(Table(gsmlist[[ sample.itr ]]@dataTable))){ 
+      #ge.vec<-as.numeric(Table(gsmlist[[ sample.itr ]]@dataTable)[,valName])
+      surv.1<-as.numeric(gsub(survtext[1], "", gsmlist[[sample.itr]]@header$characteristics_ch1[survarrayid[1]] ) )
+      surv.2<-as.numeric(gsub(survtext[2], "", gsmlist[[sample.itr]]@header$characteristics_ch1[survarrayid[2]] ) )
+               
+
+      surv.vec<-matrix(c(surv.1,surv.2) ,1, 2  )
+      surv=rbind(surv, surv.vec)
+
+      #rownames(surv)[nrow(surv)]=strsplit(gsmlist[[sample.itr]]@header$title, "\\ ")[[1]][1]
+
+      rownames(surv)[nrow(surv)]=names(gsmlist)[sample.itr]
+      
+      #if( is.na(surv.vec)[1] == TRUE)
+      #  surv.vec<- c(as.numeric(gsub("drfs_even_time_years: ", "", gsmlist[[sample.itr]]@header$characteristics_ch1[14] ) ),
+      #                              as.numeric(gsub("drfs_1_event_0_censored: ", "", gsmlist[[sample.itr]]@header$characteristics_ch1[13] ) ) )
+
+
+      if(is.null(clincaltext)==FALSE ){
+
+        #$characteristics_ch1
+        #[1] "tissue: Breast Cancer"             "patient age: 51"                  
+        #[3] "tumour size: 4"                    "nodes involved: 3"                
+        #[5] "er status: 0"                      "tumour grade: 2"                  
+        #[7] "distant-relapse event: 0"          "distant-relapse free survival: 10"
+        clnc.vec=NULL
+        for(i in 1:length(clinicalarrayid))
+          clnc.vec<-c(clnc.vec,  as.numeric(gsub( clincaltext[i], "", gsmlist[[sample.itr]]@header$characteristics_ch1[clinicalarrayid[i]] ) ) )
+
+          clnc=rbind(clnc, clnc.vec)
+         # #rownames(clnc)[nrow(clnc)]=strsplit(gsmlist[[sample.itr]]@header$title, "\\ ")[[1]][1]
+
+         rownames(clnc)[nrow(clnc)]=names(gsmlist)[sample.itr]
+         if(is.null(clinicalcol)==F)
+           colnames( clnc ) <- clinicalcol
+
+
+      }
+    
+  }
+
+}
+surv=surv[-1,]
+clnc=clnc[-1,]
+#library("survival")
+#surv<-Surv(surv)
+
+
+
+save(surv,file="surv.rda")
+
+if(is.null(clincaltext)==FALSE )
+    save(clnc,file="clnc.rda")
+
+
+total.time =proc.time() - ptm
+cat("takes",total.time[1],"sec\n")
+
+}
+
+
+.example.summarizeGEOClinical<-function(){
+summarizeGEOClinical( survtext=c( "relapse free survival time_days: ", 
+                                  "relapse free survival event: "),
+                      survarrayid=c(7,8),
+                      clincaltext=c("er_status: ", "lymph node status: ", "size: " ),
+                      clinicalarrayid=c(3, 6, 4),
+                      clinicalcol=c("er","ln","size")
+                        )
+}
+
+
+
 bigPipe<-function( fname, sampleSize=100 ){
   bigGEO(fname, sampleSize )
   summarizeGEO()
@@ -302,3 +402,4 @@ bigPipe<-function( fname, sampleSize=100 ){
   ge<-annotateGEO(ge)
   return(ge)
 } 
+
