@@ -148,7 +148,6 @@ fastTabRead <- function(con,sep="\t",header=TRUE,sampleRows=100,
 
 #by Tai-Hsien Ou Yang
 
-#by Tai-Hsien Ou Yang
 bigGEO <- function(fname,sampleSize=100) {
   gsmlist <- list()
   #gpllist <- list()
@@ -163,7 +162,7 @@ bigGEO <- function(fname,sampleSize=100) {
   con <- fileOpen(fname)
   ## This gets the header information for the GSE
   message(sprintf("Parsing Metadata..."))
-  a <- readLines(con,lineCounts[1,1])
+  a <- readLines(con,lineCounts[1,1]-1) #-1 to avoid warning message
   header=parseGeoMeta(a)
 
   save(header,file="header.tmp")
@@ -176,22 +175,16 @@ bigGEO <- function(fname,sampleSize=100) {
     entityType <- tolower(sub("\\^","",tmp[1]))
     nLinesToRead <- lineCounts[j+1,1]-lineCounts[j,1]-1
 
-    if(j==nrow(lineCounts)) {
-      GSMcount=GSMcount+1
-      gsmlist[[accession]] <- .parseGSMWithLimits(con,n=nLinesToRead)
+
+    if(j==nrow(lineCounts))
       nLinesToRead <- NULL
-      save( gsmlist, file=paste( GSMcount,".tmp",sep="")  )
-    }
-
-
-    #if(entityType=="sample") {
     
 
       GSMcount=GSMcount+1
       #if(is.null(GSElimits)) {
       if( GSMcount %% sampleSize!=0){ 
         gsmlist[[accession]] <- .parseGSMWithLimits(con,n=nLinesToRead)
-  
+        
         }else{
 
         message(sprintf("Saving %d parsed samples...", GSMcount))
@@ -203,29 +196,16 @@ bigGEO <- function(fname,sampleSize=100) {
         }
 
 
+   if(is.null(nLinesToRead)==TRUE){
+      message(sprintf("Saving %d parsed samples...", GSMcount))
+      save( gsmlist, file=paste( GSMcount,".tmp",sep="")  )
+    }
 
-      #} else {
-
-      #  message(sprintf("Not samples"))
-      #  if((GSMcount>=GSElimits[1]) & (GSMcount<=GSElimits[2])) {
-      #    gsmlist[[accession]] <- .parseGSMWithLimits(con,n=nLinesToRead)
-      #  } else {
-      #    if(!is.null(nLinesToRead)) {
-      #      readLines(con,n=nLinesToRead)
-      #    }
-      #  }
-      #}
-    #}
-    #if(entityType=="platform") {
-      #gpllist[[accession]] <- .parseGPLWithLimits(con,n=nLinesToRead)
-    #}
   }
   close(con)
-  #return(new("GSE",
-  #           header= header,
-  #           gsms  = gsmlist,
-  #           gpls  = gpllist))
+
 }
+
 
 
 
@@ -328,7 +308,7 @@ for( file.itr in 1:(length(data.sources)) ){ #1 is GPL platform data
   message(sprintf("Loading %d split...", file.itr ))
 
   load( data.sources[file.itr] )
-  for( sample.itr in 2:length(gsmlist) ){
+  for( sample.itr in 1:length(gsmlist) ){
     #if( valName  %in% names(Table(gsmlist[[ sample.itr ]]@dataTable))){ 
       #ge.vec<-as.numeric(Table(gsmlist[[ sample.itr ]]@dataTable)[,valName])
       surv.1<-as.numeric(gsub(survtext[1], "", gsmlist[[sample.itr]]@header$characteristics_ch1[survarrayid[1]] ) )
