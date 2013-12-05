@@ -244,7 +244,7 @@ rownames(ge) <- probeset_ID
 
 
 
-for( file.itr in 1:(length(data.sources)) ){ #1 is GPL platform data
+for( file.itr in 1:(length(data.sources)-1) ){ #last one is the header.tmp
   message(sprintf("Loading %d split...", file.itr ))
 
   load( data.sources[file.itr] )
@@ -304,7 +304,7 @@ if(is.null(clincaltext)==FALSE )
   clnc<-matrix(NA,1, length(clinicalarrayid) )
 
 
-for( file.itr in 1:(length(data.sources)) ){ #1 is GPL platform data
+for( file.itr in 1:(length(data.sources)-1) ){#last one is the header.tmp
   message(sprintf("Loading %d split...", file.itr ))
 
   load( data.sources[file.itr] )
