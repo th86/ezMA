@@ -147,13 +147,15 @@ fastTabRead <- function(con,sep="\t",header=TRUE,sampleRows=100,
 
 
 #by Tai-Hsien Ou Yang
+
+#by Tai-Hsien Ou Yang
 bigGEO <- function(fname,sampleSize=100) {
   gsmlist <- list()
   #gpllist <- list()
   GSMcount <- 0
   writeLines('Parsing....')
   con <- fileOpen(fname)
-  lineCounts <- filegrep(con,"\\^(SAMPLE|PLATFORM)",chunksize=10000)
+  lineCounts <- filegrep(con,"\\^(SAMPLE)",chunksize=10000)
   message(sprintf("Found %d entities...",nrow(lineCounts)))
   close(con)
   ## I close and reopen the file because on Windows, the seek
@@ -161,10 +163,10 @@ bigGEO <- function(fname,sampleSize=100) {
   con <- fileOpen(fname)
   ## This gets the header information for the GSE
   message(sprintf("Parsing Metadata..."))
-  a <- readLines(con,lineCounts[1,1]-1)
+  a <- readLines(con,lineCounts[1,1])
   header=parseGeoMeta(a)
 
-  save(header,file="header.rda")
+  save(header,file="header.tmp")
 
   ## parse the actual entities, now
   for(j in 1:nrow(lineCounts)) {
@@ -176,7 +178,7 @@ bigGEO <- function(fname,sampleSize=100) {
 
     if(j==nrow(lineCounts)) {
       nLinesToRead <- NULL
-      save( gsmlist, file=paste( GSMcount,".rda",sep="")  )
+      save( gsmlist, file=paste( GSMcount,".tmp",sep="")  )
     }
 
 
@@ -191,7 +193,7 @@ bigGEO <- function(fname,sampleSize=100) {
         }else{
 
         message(sprintf("Saving %d parsed samples...", GSMcount))
-        save( gsmlist, file=paste( GSMcount,".rda",sep="")  )
+        save( gsmlist, file=paste( GSMcount,".tmp",sep="")  )
         rm(gsmlist)
         gc()
         gsmlist <- list()
@@ -231,9 +233,9 @@ summarizeGEO<-function(){
 
 ptm <- proc.time()
 
-data.sources = list.files(pattern="*.rda")
+data.sources = list.files(pattern="*.tmp")
 
-load("header.rda")
+load("header.tmp")
 sample_id<-header$sample_id
 
 #load( data.sources[1] ) #GPL platform data as the first
@@ -242,10 +244,13 @@ sample_id<-header$sample_id
 load( data.sources[1] )
 
 if( "ID" %in% names(Table(gsmlist[[1]]@dataTable))==TRUE ){
-	probeset_ID<-as.character(Table(gsmlist[[1]]@dataTable)[,"ID"])
+  probeset_ID<-as.character(Table(gsmlist[[1]]@dataTable)[,"ID"])
 }else{
-	probeset_ID<-as.character(Table(gsmlist[[1]]@dataTable)[,"ID_REF"])
+  probeset_ID<-as.character(Table(gsmlist[[1]]@dataTable)[,"ID_REF"])
 }
+
+
+#gsmlist[[]]@header$characteristics_ch1
 
 
 
@@ -257,13 +262,12 @@ rownames(ge) <- probeset_ID
 
 
 
-for( file.itr in 1:(length(data.sources)-1) ){ #1 is GPL platform data
+for( file.itr in 1:(length(data.sources)) ){ #1 is GPL platform data
   message(sprintf("Loading %d split...", file.itr ))
 
   load( data.sources[file.itr] )
   for( sample.itr in 1:length(gsmlist) ){
     if( valName  %in% names(Table(gsmlist[[ sample.itr ]]@dataTable))){ 
-      #gsmlist[[sample.itr]]@header$characteristics_ch1
       ge.vec<-as.numeric(Table(gsmlist[[ sample.itr ]]@dataTable)[,valName])
       ge=cbind(ge, ge.vec)
       colnames(ge)[ncol(ge)]=names(gsmlist)[sample.itr]
@@ -280,6 +284,7 @@ total.time =proc.time() - ptm
 cat("takes",total.time[1],"sec\n")
 
 }
+
 
 
 annotateGEO<-function(ge){
@@ -317,7 +322,7 @@ if(is.null(clincaltext)==FALSE )
   clnc<-matrix(NA,1, length(clinicalarrayid) )
 
 
-for( file.itr in 1:(length(data.sources)-1) ){ #1 is GPL platform data
+for( file.itr in 1:(length(data.sources)) ){ #1 is GPL platform data
   message(sprintf("Loading %d split...", file.itr ))
 
   load( data.sources[file.itr] )
