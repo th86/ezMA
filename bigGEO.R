@@ -352,7 +352,7 @@ for( file.itr in 1:(length(data.sources)-1) ){#last one is the header.tmp
 
 }
 surv=surv[-1,]
-clnc=clnc[-1,]
+
 #library("survival")
 #surv<-Surv(surv)
 
@@ -360,9 +360,10 @@ clnc=clnc[-1,]
 
 save(surv,file="surv.rda")
 
-if(is.null(clincaltext)==FALSE )
+if(is.null(clincaltext)==FALSE ){
+    clnc=clnc[-1,]
     save(clnc,file="clnc.rda")
-
+}
 
 total.time =proc.time() - ptm
 cat("takes",total.time[1],"sec\n")
@@ -380,6 +381,25 @@ summarizeGEOClinical( survtext=c( "relapse free survival time_days: ",
                         )
 }
 
+
+
+getAnnot<-function( platform_id ){
+  library("GEOquery")
+  GPL <- getGEO(platform_id)
+  colName<-colnames(Table(GPL ))
+
+  if("ID"%in%colName & "GENE_SYMBOL"%in%colName )
+    GPL_ID2SYMBOL<-Table(GPL )[ ,c("ID","GENE_SYMBOL" ) ]
+
+  return( GPL_ID2SYMBOL )
+}
+
+.example.getAnnot<-function(){
+ GPL_ID2SYMBOL<-getAnnot("GPL1708")
+ probe_id<-rownames(ge)
+ rownames(ge)<- GPL_ID2SYMBOL[ rownames(ge) ,"GENE_SYMBOL"]
+ rownames(ge)[which(rownames(ge)=="")]= GPL_ID2SYMBOL[ probe_id[which(rownames(ge)=="")], "ID"  ] 
+}
 
 
 bigPipe<-function( fname, sampleSize=100 ){
